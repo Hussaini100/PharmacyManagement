@@ -1,0 +1,97 @@
+﻿@page "/products/edit/{id:int}"
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+
+<PageTitle>ویرایش دارو</PageTitle>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="bi bi-pencil"></i> ویرایش دارو</h2>
+            <hr />
+        </div>
+    </div>
+
+    @if (product == null)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">در حال بارگذاری...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- اضافه کردن FormName به EditForm -->
+        <EditForm Model="@product" FormName="editProductForm" OnValidSubmit="@HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <!-- بقیه فیلدها بدون تغییر -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="name">نام دارو *</label>
+                        <InputText id="name" @bind-Value="product.Name" class="form-control" />
+                        <ValidationMessage For="@(() => product.Name)" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="manufacturer">تولید کننده</label>
+                        <InputText id="manufacturer" @bind-Value="product.Manufacturer" class="form-control" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- بقیه کد بدون تغییر -->
+            <!-- ... -->
+
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Product? product;
+    private bool isSubmitting = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        product = await ProductService.GetProductByIdAsync(Id);
+        if (product == null)
+        {
+            Navigation.NavigateTo("/products");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        isSubmitting = true;
+
+        try
+        {
+            if (product != null)
+            {
+                await ProductService.UpdateProductAsync(product);
+                Navigation.NavigateTo("/products");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle error
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/products");
+    }
+}

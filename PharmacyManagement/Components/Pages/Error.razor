@@ -1,0 +1,65 @@
+﻿@page "/Error"
+@using System.Diagnostics
+@inject NavigationManager Navigation
+
+<PageTitle>خطا!</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <i class="bi bi-exclamation-triangle display-1 text-danger"></i>
+            <h1 class="display-4 text-danger">خطا!</h1>
+            <h2 class="text-danger">در حین پردازش درخواست شما خطایی رخ داده است.</h2>
+
+            @if (ShowRequestId)
+            {
+                <p>
+                    <strong>شناسه درخواست:</strong> <code>@RequestId</code>
+                </p>
+            }
+
+            <p class="lead">متاسفانه یک خطای غیرمنتظره رخ داده است.</p>
+
+            <div class="mt-4">
+                <button class="btn btn-primary" @onclick="GoHome">
+                    <i class="bi bi-house"></i> بازگشت به صفحه اصلی
+                </button>
+            </div>
+
+            @if (ShowDevelopmentInfo)
+            {
+                <div class="mt-4 alert alert-info">
+                    <h5>حالت توسعه</h5>
+                    <p>
+                        تغییر به محیط <strong>توسعه</strong> اطلاعات دقیق‌تری درباره خطای رخ داده نمایش می‌دهد.
+                    </p>
+                    <p>
+                        <strong>محیط توسعه نباید برای برنامه‌های مستقر شده فعال باشد.</strong>
+                        این ممکن است منجر به نمایش اطلاعات حساس از خطاها به کاربران نهایی شود.
+                        برای دیباگ محلی، محیط <strong>توسعه</strong> را با تنظیم متغیر محیطی <strong>ASPNETCORE_ENVIRONMENT</strong> به <strong>Development</strong> فعال کنید
+                        و برنامه را مجدداً راه‌اندازی کنید.
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private string? RequestId { get; set; }
+    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+    private bool ShowDevelopmentInfo => HttpContext?.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment() == true;
+
+    protected override void OnInitialized()
+    {
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+    }
+
+    private void GoHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

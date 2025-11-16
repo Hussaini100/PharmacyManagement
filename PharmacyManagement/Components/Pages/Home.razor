@@ -1,0 +1,81 @@
+﻿@page "/"
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+
+<PageTitle>مدیریت داروخانه - صفحه اصلی</PageTitle>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-center mb-4">🩺 سیستم مدیریت داروخانه</h1>
+            <p class="lead text-center">به سیستم مدیریت داروخانه خوش آمدید</p>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-capsule display-4 text-primary"></i>
+                    <h5 class="card-title mt-3">مدیریت داروها</h5>
+                    <p class="card-text">افزودن، ویرایش و حذف داروها</p>
+                    <a href="/products" class="btn btn-primary">مدیریت داروها</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-search display-4 text-success"></i>
+                    <h5 class="card-title mt-3">جستجوی دارو</h5>
+                    <p class="card-text">جستجوی سریع در بین داروها</p>
+                    <a href="/products" class="btn btn-success">جستجو</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-graph-up display-4 text-info"></i>
+                    <h5 class="card-title mt-3">گزارشات</h5>
+                    <p class="card-text">مشاهده گزارشات موجودی</p>
+                    <button class="btn btn-info" @onclick="ShowInventoryReport">گزارش موجودی</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (lowStockProducts?.Any() == true)
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    <h5><i class="bi bi-exclamation-triangle"></i> هشدار: داروهای با موجودی کم</h5>
+                    <ul>
+                        @foreach (var product in lowStockProducts)
+                        {
+                            <li>@product.Name - موجودی: @product.StockQuantity</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Product>? lowStockProducts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var allProducts = await ProductService.GetAllProductsAsync();
+        lowStockProducts = allProducts.Where(p => p.StockQuantity < 20).ToList();
+    }
+
+    private void ShowInventoryReport()
+    {
+        // Implement inventory report functionality
+    }
+}

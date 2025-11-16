@@ -1,0 +1,142 @@
+﻿@page "/products/add"
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+
+<PageTitle>افزودن داروی جدید</PageTitle>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="bi bi-plus-circle"></i> افزودن داروی جدید</h2>
+            <hr />
+        </div>
+    </div>
+
+    <!-- اضافه کردن FormName به EditForm -->
+    <EditForm Model="@newProduct" FormName="addProductForm" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="name">نام دارو *</label>
+                    <InputText id="name" @bind-Value="newProduct.Name" class="form-control" />
+                    <ValidationMessage For="@(() => newProduct.Name)" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="manufacturer">تولید کننده</label>
+                    <InputText id="manufacturer" @bind-Value="newProduct.Manufacturer" class="form-control" />
+                </div>
+            </div>
+        </div>
+
+        <!-- بقیه فیلدها بدون تغییر -->
+        <div class="row">
+            <div class="col-12">
+                <div class="form-group mb-3">
+                    <label for="description">توضیحات</label>
+                    <InputTextArea id="description" @bind-Value="newProduct.Description" class="form-control" rows="3" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label for="price">قیمت (تومان) *</label>
+                    <InputNumber id="price" @bind-Value="newProduct.Price" class="form-control" />
+                    <ValidationMessage For="@(() => newProduct.Price)" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label for="stock">تعداد موجودی *</label>
+                    <InputNumber id="stock" @bind-Value="newProduct.StockQuantity" class="form-control" />
+                    <ValidationMessage For="@(() => newProduct.StockQuantity)" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label for="category">دسته‌بندی *</label>
+                    <InputSelect id="category" @bind-Value="newProduct.Category" class="form-control">
+                        <option value="">انتخاب کنید</option>
+                        <option value="مسکن">مسکن</option>
+                        <option value="آنتی بیوتیک">آنتی بیوتیک</option>
+                        <option value="ویتامین">ویتامین</option>
+                        <option value="گوارشی">گوارشی</option>
+                        <option value="قلبی">قلبی</option>
+                        <option value="مغز و اعصاب">مغز و اعصاب</option>
+                        <option value="دیابت">دیابت</option>
+                        <option value="سایر">سایر</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => newProduct.Category)" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="productionDate">تاریخ تولید *</label>
+                    <InputDate id="productionDate" @bind-Value="newProduct.ProductionDate" class="form-control" />
+                    <ValidationMessage For="@(() => newProduct.ProductionDate)" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="expiryDate">تاریخ انقضا *</label>
+                    <InputDate id="expiryDate" @bind-Value="newProduct.ExpiryDate" class="form-control" />
+                    <ValidationMessage For="@(() => newProduct.ExpiryDate)" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <button type="submit" class="btn btn-success" disabled="@isSubmitting">
+                    @if (isSubmitting)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    }
+                    <i class="bi bi-check-circle"></i> ذخیره دارو
+                </button>
+                <button type="button" class="btn btn-secondary ms-2" @onclick="Cancel">
+                    <i class="bi bi-x-circle"></i> انصراف
+                </button>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private Product newProduct = new();
+    private bool isSubmitting = false;
+
+    private async Task HandleValidSubmit()
+    {
+        isSubmitting = true;
+
+        try
+        {
+            await ProductService.AddProductAsync(newProduct);
+            Navigation.NavigateTo("/products");
+        }
+        catch (Exception ex)
+        {
+            // Handle error
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/products");
+    }
+}

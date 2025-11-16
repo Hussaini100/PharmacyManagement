@@ -1,0 +1,95 @@
+﻿@page "/products"
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>مدیریت داروها</PageTitle>
+
+<div class="container mt-4">
+    <!-- ... کدهای قبلی بدون تغییر ... -->
+    @code {
+        private List<Product>? products;
+        private string searchTerm = string.Empty;
+
+        protected override async Task OnInitializedAsync()
+        {
+            await LoadProducts();
+        }
+
+        private async Task LoadProducts()
+        {
+            try
+            {
+                products = await ProductService.GetAllProductsAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading products: {ex.Message}");
+            }
+        }
+
+        private async Task SearchProducts()
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                await LoadProducts();
+            }
+            else
+            {
+                try
+                {
+                    products = await ProductService.SearchProductsAsync(searchTerm);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error searching products: {ex.Message}");
+                }
+            }
+        }
+
+        private void NavigateToAdd()
+        {
+            Navigation.NavigateTo("products/add");
+        }
+
+        private void NavigateToEdit(int id)
+        {
+            Navigation.NavigateTo($"products/edit/{id}");
+        }
+
+        private async Task DeleteProduct(Product product)
+        {
+            try
+            {
+                // استفاده از confirm ساده‌تر
+                if (await JS.InvokeAsync<bool>("confirm", $"آیا از حذف داروی '{product.Name}' مطمئن هستید؟"))
+                {
+                    var result = await ProductService.DeleteProductAsync(product.Id);
+                    if (result)
+                    {
+                        await LoadProducts();
+                        StateHasChanged(); // به روز رسانی UI
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // اگر JS confirm کار نکرد، از روش جایگزین استفاده کنید
+                Console.WriteLine($"Delete error: {ex.Message}");
+                await HandleDeleteWithoutJS(product);
+            }
+        }
+
+        private async Task HandleDeleteWithoutJS(Product product)
+        {
+            // روش ساده بدون JavaScript
+            // در واقعیت می‌توانید یک modal نمایش دهید
+            var result = await ProductService.DeleteProductAsync(product.Id);
+            if (result)
+            {
+                await LoadProducts();
+                StateHasChanged();
+            }
+        }
+    }
+</div>
